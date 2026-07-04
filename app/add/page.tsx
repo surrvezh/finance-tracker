@@ -26,6 +26,7 @@ export default function AddPage() {
   const [note, setNote] = useState("");
   const [accountId, setAccountId] = useState("");
   const [source, setSource] = useState("salary");
+  const [brandName, setBrandName] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [fundName, setFundName] = useState("");
 
@@ -50,7 +51,10 @@ export default function AddPage() {
 
     if (txType === "income") {
       url = "/api/income";
-      body = { account_id: accountId, source, amount: Number(amount), date, note };
+      const incomeNote = source === "brand_deal" && brandName.trim()
+        ? `${brandName.trim()}${note ? ` — ${note}` : ""}`
+        : note;
+      body = { account_id: accountId, source, amount: Number(amount), date, note: incomeNote };
     } else if (txType === "expense") {
       url = "/api/expenses";
       body = { account_id: accountId, category_id: categoryId, amount: Number(amount), date, note };
@@ -134,6 +138,18 @@ export default function AddPage() {
                 <option value="other" className="bg-zinc-900">Other</option>
               </select>
             </div>
+            {source === "brand_deal" && (
+              <div className="bg-[#141414] rounded-[16px] p-4 border border-zinc-800">
+                <label className="text-xs text-zinc-500 font-medium block mb-2">Brand Name</label>
+                <input
+                  type="text"
+                  value={brandName}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  placeholder="e.g. boAt, Mamaearth..."
+                  className="w-full bg-transparent text-white placeholder:text-zinc-600 outline-none text-sm"
+                />
+              </div>
+            )}
             <div className="bg-[#141414] rounded-[16px] p-4 border border-zinc-800">
               <label className="text-xs text-zinc-500 font-medium block mb-2">Account</label>
               <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full bg-transparent text-white outline-none text-sm">
