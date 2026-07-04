@@ -8,6 +8,8 @@ export function getDb(): Client {
       url: process.env.TURSO_DATABASE_URL!,
       authToken: process.env.TURSO_AUTH_TOKEN!,
     });
+    // Enable FK enforcement (libsql remote: fire-and-forget is fine)
+    client.execute("PRAGMA foreign_keys = ON").catch(() => {});
   }
   return client;
 }
@@ -73,7 +75,8 @@ export async function initDb() {
       user_id TEXT NOT NULL REFERENCES users(id),
       month TEXT NOT NULL,
       report TEXT NOT NULL,
-      generated_at TEXT DEFAULT (datetime('now'))
+      generated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(user_id, month)
     )`,
     `CREATE TABLE IF NOT EXISTS user_settings (
       user_id TEXT PRIMARY KEY REFERENCES users(id),
@@ -401,13 +404,11 @@ export async function upsertInsight(userId: string, month: string, report: strin
   const db = getDb();
   const id = crypto.randomUUID();
   await db.execute({
-    sql: `INSERT INTO ai_insights (id, user_id, month, report) VALUES (?,?,?,?)
-          ON CONFLICT DO NOTHING`,
+    sql: `INSERT INTO ai_insights (id, user_id, month, report)
+          VALUES (?, ?, ?, ?)
+          ON CONFLICT(user_id, month) DO UPDATE SET
+            report = excluded.report,
+            generated_at = datetime('now')`,
     args: [id, userId, month, report],
-  });
-  // If conflict (month exists), update instead
-  await db.execute({
-    sql: `UPDATE ai_insights SET report=?, generated_at=datetime('now') WHERE user_id=? AND month=?`,
-    args: [report, userId, month],
   });
 }

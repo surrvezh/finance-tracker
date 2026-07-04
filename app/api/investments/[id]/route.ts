@@ -6,7 +6,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { fund_name, amount, date, note } = await req.json();
-  if (!fund_name || !date || amount == null || amount === "" || isNaN(Number(amount))) {
+  if (!fund_name || !date || amount == null || amount === "" || isNaN(Number(amount)) || Number(amount) <= 0) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
   }
   await updateInvestment(params.id, session.user.id, fund_name, Number(amount), date, note ?? null);

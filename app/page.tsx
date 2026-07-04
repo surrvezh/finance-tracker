@@ -7,6 +7,7 @@ import { IncomeExpenseBar } from "@/components/IncomeExpenseBar";
 import { BottomNav } from "@/components/BottomNav";
 import { MonthPicker } from "@/components/MonthPicker";
 import { currentMonth } from "@/lib/utils";
+import { BudgetIndicator } from "@/components/BudgetIndicator";
 
 export default function HomePage() {
   const [month, setMonth] = useState(currentMonth());
@@ -47,6 +48,39 @@ export default function HomePage() {
               netSaved={summary.netSaved}
               totalInvested={summary.totalInvested}
             />
+            {(() => {
+              const budgetCategories = (summary.categories as any[]).filter(
+                (c: any) => c.budget_enabled && c.budget_limit
+              );
+              const overBudget = budgetCategories.filter((c: any) => {
+                const spent = (summary.expensesByCategory as any[]).find(
+                  (e: any) => e.category_id === c.id
+                );
+                return spent && Number(spent.total) / Number(c.budget_limit) >= 0.8;
+              });
+              if (!overBudget.length) return null;
+              return (
+                <div className="bg-[#141414] rounded-[16px] p-4 border border-zinc-800">
+                  <p className="text-xs text-zinc-500 font-medium mb-2">Budget Alerts</p>
+                  <div className="space-y-1.5">
+                    {overBudget.map((c: any) => {
+                      const spent = (summary.expensesByCategory as any[]).find(
+                        (e: any) => e.category_id === c.id
+                      );
+                      return (
+                        <div key={c.id} className="flex items-center gap-2 text-xs">
+                          <BudgetIndicator spent={Number(spent?.total ?? 0)} limit={Number(c.budget_limit)} />
+                          <span className="text-zinc-300">{c.name}</span>
+                          <span className="text-zinc-500 ml-auto">
+                            ₹{Number(spent?.total ?? 0).toLocaleString("en-IN")} / ₹{Number(c.budget_limit).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
             <SpendingDonut data={(summary.expensesByCategory as any[]).map((c: any) => ({
               name: c.name ?? "Unknown",
               color: c.color,
