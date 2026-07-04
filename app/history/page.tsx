@@ -1,0 +1,99 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { BottomNav } from "@/components/BottomNav";
+import { MonthPicker } from "@/components/MonthPicker";
+import { TransactionRow } from "@/components/TransactionRow";
+import { currentMonth } from "@/lib/utils";
+import type { TransactionType } from "@/types";
+
+type Filter = "all" | TransactionType;
+
+const FILTERS: { value: Filter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "income", label: "Income" },
+  { value: "expense", label: "Expenses" },
+  { value: "investment", label: "Investments" },
+];
+
+export default function HistoryPage() {
+  const [month, setMonth] = useState(currentMonth());
+  const [filter, setFilter] = useState<Filter>("all");
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function loadTransactions() {
+    setLoading(true);
+    const [incRes, expRes, invRes] = await Promise.all([
+      fetch(`/api/income?month=${month}`).then((r) => r.json()),
+      fetch(`/api/expenses?month=${month}`).then((r) => r.json()),
+      fetch(`/api/investments?month=${month}`).then((r) => r.json()),
+    ]);
+
+    const income = (incRes.data ?? []).map((i: any) => ({
+      ...i, type: "income", label: ({ salary: "Salary", brand_deal: "Brand Deal", youtube: "YouTube", other: "Other" } as Record<string, string>)[i.source as string] ?? i.source,
+      color: "#10b981",
+    }));
+    const expenses = (expRes.data ?? []).map((e: any) => ({
+      ...e, type: "expense", label: e.category_name ?? "Expense", color: e.category_color,
+    }));
+    const investments = (invRes.data ?? []).map((inv: any) => ({
+      ...inv, type: "investment", label: inv.fund_name, color: "#3b82f6", account_name: null,
+    }));
+
+    const all = [...income, ...expenses, ...investments].sort((a, b) => b.date.localeCompare(a.date));
+    setTransactions(all);
+    setLoading(false);
+  }
+
+  useEffect(() => { loadTransactions(); }, [month]);
+
+  async function handleDelete(id: string, type: TransactionType) {
+    const urlMap = { income: `/api/income/${id}`, expense: `/api/expenses/${id}`, investment: `/api/investments/${id}` };
+    await fetch(urlMap[type], { method: "DELETE" });
+    loadTransactions();
+  }
+
+  const filtered = filter === "all" ? transactions : transactions.filter((t) => t.type === filter);
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] pb-24">
+      <div className="px-5 pt-12 pb-4">
+        <div className="flex items-center justify-between mb-5">
+          <h1 className="text-xl font-semibold">History</h1>
+          <MonthPicker month={month} onChange={setMonth} />
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1 no-scrollbar">
+          {FILTERS.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setFilter(value)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                filter === value ? "bg-violet-600 text-white" : "bg-zinc-800 text-zinc-400"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-zinc-900 rounded-xl animate-pulse" />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <p className="text-zinc-500 text-sm text-center py-12">No transactions found.</p>
+        ) : (
+          <div className="bg-[#141414] rounded-[16px] px-4 border border-zinc-800">
+            {filtered.map((t) => (
+              <TransactionRow key={`${t.type}-${t.id}`} {...t} onDelete={handleDelete} />
+            ))}
+          </div>
+        )}
+      </div>
+      <BottomNav />
+    </div>
+  );
+}
