@@ -1,18 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Check, X, LogOut } from "lucide-react";
+import { Plus, Trash2, LogOut } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { signOut } from "next-auth/react";
 
 export default function SettingsPage() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [budgetWarnings, setBudgetWarnings] = useState(false);
 
   // inline edit state
-  const [editingAccount, setEditingAccount] = useState<string | null>(null);
-  const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [newAccountName, setNewAccountName] = useState("");
   const [newAccountDesc, setNewAccountDesc] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
