@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { account_id, category_id, amount, date, note } = await req.json();
-  if (!account_id || !category_id || !amount || !date) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  if (!account_id || !category_id || amount == null || amount === "" || !date) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   const id = await createExpense(session.user.id, account_id, category_id, Number(amount), date, note ?? null);
   return NextResponse.json({ data: { id } }, { status: 201 });
 }
