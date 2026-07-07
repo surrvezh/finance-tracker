@@ -329,7 +329,7 @@ export async function deleteInvestment(id: string, userId: string) {
 export async function getMonthlySummary(userId: string, month: string) {
   const db = getDb();
 
-  const [incomeRows, expenseRows, investmentRows, categoryRows] = await Promise.all([
+  const [incomeRows, expenseRows, investmentRows, categoryRows, accountRows] = await Promise.all([
     db.execute({
       sql: `SELECT source, SUM(amount) as total FROM income WHERE user_id=? AND date LIKE ? GROUP BY source`,
       args: [userId, `${month}%`],
@@ -348,6 +348,13 @@ export async function getMonthlySummary(userId: string, month: string) {
       sql: `SELECT * FROM expense_categories WHERE user_id=?`,
       args: [userId],
     }),
+    db.execute({
+      sql: `SELECT a.name as account_name, SUM(i.amount) as total
+            FROM income i LEFT JOIN accounts a ON i.account_id = a.id
+            WHERE i.user_id=? AND i.date LIKE ?
+            GROUP BY i.account_id`,
+      args: [userId, `${month}%`],
+    }),
   ]);
 
   const totalIncome = (incomeRows.rows as any[]).reduce((s, r) => s + Number(r.total), 0);
@@ -362,6 +369,10 @@ export async function getMonthlySummary(userId: string, month: string) {
     expensesByCategory: expenseRows.rows,
     incomeBySource: incomeRows.rows,
     categories: categoryRows.rows,
+    incomeByAccount: (accountRows.rows as any[]).map((r) => ({
+      account_name: r.account_name ?? "Unknown",
+      total: Number(r.total ?? 0),
+    })),
   };
 }
 
@@ -373,6 +384,91 @@ export async function getLast6MonthsSummary(userId: string) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
   }
+  const results = await Promise.all(
+    months.map(async (month) => {
+      const [inc, exp] = await Promise.all([
+        db.execute({ sql: `SELECT SUM(amount) as total FROM income WHERE user_id=? AND date LIKE ?`, args: [userId, `${month}%`] }),
+        db.execute({ sql: `SELECT SUM(amount) as total FROM expenses WHERE user_id=? AND date LIKE ?`, args: [userId, `${month}%`] }),
+      ]);
+      return {
+        month,
+        income: Number((inc.rows[0] as any)?.total ?? 0),
+        expenses: Number((exp.rows[0] as any)?.total ?? 0),
+      };
+    })
+  );
+  return results;
+}
+
+export async function getIncomeByAccount(userId: string, period: string): Promise<{ account_name: string; total: number }[]> {
+  const db = getDb();
+  // period is either "YYYY-MM" (7 chars) or "YYYY" (4 chars)
+  const pattern = period.length === 7 ? `${period}%` : `${period}-%`;
+  const result = await db.execute({
+    sql: `SELECT a.name as account_name, SUM(i.amount) as total
+          FROM income i
+          LEFT JOIN accounts a ON i.account_id = a.id
+          WHERE i.user_id=? AND i.date LIKE ?
+          GROUP BY i.account_id`,
+    args: [userId, pattern],
+  });
+  return (result.rows as any[]).map((r) => ({
+    account_name: r.account_name ?? "Unknown",
+    total: Number(r.total ?? 0),
+  }));
+}
+
+export async function getYearlySummary(userId: string, year: string) {
+  const db = getDb();
+  const pattern = `${year}-%`;
+
+  const [incomeRows, expenseRows, investmentRows, accountRows] = await Promise.all([
+    db.execute({
+      sql: `SELECT source, SUM(amount) as total FROM income WHERE user_id=? AND date LIKE ? GROUP BY source`,
+      args: [userId, pattern],
+    }),
+    db.execute({
+      sql: `SELECT e.category_id, c.name, c.color, SUM(e.amount) as total
+            FROM expenses e LEFT JOIN expense_categories c ON e.category_id=c.id
+            WHERE e.user_id=? AND e.date LIKE ? GROUP BY e.category_id`,
+      args: [userId, pattern],
+    }),
+    db.execute({
+      sql: `SELECT SUM(amount) as total FROM investments WHERE user_id=? AND date LIKE ?`,
+      args: [userId, pattern],
+    }),
+    db.execute({
+      sql: `SELECT a.name as account_name, SUM(i.amount) as total
+            FROM income i LEFT JOIN accounts a ON i.account_id = a.id
+            WHERE i.user_id=? AND i.date LIKE ?
+            GROUP BY i.account_id`,
+      args: [userId, pattern],
+    }),
+  ]);
+
+  const totalIncome = (incomeRows.rows as any[]).reduce((s, r) => s + Number(r.total), 0);
+  const totalExpenses = (expenseRows.rows as any[]).reduce((s, r) => s + Number(r.total), 0);
+  const totalInvested = Number((investmentRows.rows[0] as any)?.total ?? 0);
+
+  return {
+    totalIncome,
+    totalExpenses,
+    netSaved: totalIncome - totalExpenses - totalInvested,
+    totalInvested,
+    expensesByCategory: expenseRows.rows,
+    incomeBySource: incomeRows.rows,
+    incomeByAccount: (accountRows.rows as any[]).map((r) => ({
+      account_name: r.account_name ?? "Unknown",
+      total: Number(r.total ?? 0),
+    })),
+  };
+}
+
+export async function getAllMonthsInYear(userId: string, year: string): Promise<{ month: string; income: number; expenses: number }[]> {
+  const db = getDb();
+  const months = Array.from({ length: 12 }, (_, i) =>
+    `${year}-${String(i + 1).padStart(2, "0")}`
+  );
   const results = await Promise.all(
     months.map(async (month) => {
       const [inc, exp] = await Promise.all([
