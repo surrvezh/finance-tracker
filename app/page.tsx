@@ -4,34 +4,99 @@ import { useState, useEffect } from "react";
 import { SummaryCards } from "@/components/SummaryCards";
 import { SpendingDonut } from "@/components/SpendingDonut";
 import { IncomeExpenseBar } from "@/components/IncomeExpenseBar";
+import { IncomeBreakdownSheet } from "@/components/IncomeBreakdownSheet";
 import { BottomNav } from "@/components/BottomNav";
 import { MonthPicker } from "@/components/MonthPicker";
 import { currentMonth } from "@/lib/utils";
-import { BudgetIndicator } from "@/components/BudgetIndicator";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+type ViewMode = "monthly" | "yearly";
 
 export default function HomePage() {
+  const [mode, setMode] = useState<ViewMode>("monthly");
+
+  // Monthly state
   const [month, setMonth] = useState(currentMonth());
   const [summary, setSummary] = useState<any>(null);
   const [last6, setLast6] = useState<any[]>([]);
+
+  // Yearly state
+  const [year, setYear] = useState(new Date().getFullYear().toString());
+  const [yearlySummary, setYearlySummary] = useState<any>(null);
+  const [allMonths, setAllMonths] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/summary?month=${month}`)
-      .then((r) => r.json())
-      .then(({ data }) => {
-        setSummary(data.summary);
-        setLast6(data.last6);
-      })
-      .finally(() => setLoading(false));
-  }, [month]);
+    if (mode === "monthly") {
+      setLoading(true);
+      fetch(`/api/summary?month=${month}`)
+        .then((r) => r.json())
+        .then(({ data }) => {
+          setSummary(data.summary);
+          setLast6(data.last6);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [month, mode]);
+
+  useEffect(() => {
+    if (mode === "yearly") {
+      setLoading(true);
+      fetch(`/api/summary/yearly?year=${year}`)
+        .then((r) => r.json())
+        .then(({ data }) => {
+          setYearlySummary(data.summary);
+          setAllMonths(data.allMonths);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [year, mode]);
+
+  const currentYear = new Date().getFullYear();
+
+  const activeSummary = mode === "monthly" ? summary : yearlySummary;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] pb-24">
       <div className="px-5 pt-12 pb-4">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-semibold">Overview</h1>
-          <MonthPicker month={month} onChange={setMonth} />
+        {/* Mode Toggle */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex bg-zinc-900 rounded-[10px] p-0.5">
+            {(["monthly", "yearly"] as ViewMode[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => { setMode(m); setLoading(true); }}
+                className={`px-4 py-1.5 rounded-[8px] text-xs font-medium transition-colors capitalize ${
+                  mode === m ? "bg-zinc-700 text-white" : "text-zinc-500"
+                }`}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+
+          {mode === "monthly" ? (
+            <MonthPicker month={month} onChange={setMonth} />
+          ) : (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setYear((y) => String(Number(y) - 1))}
+                className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="text-sm font-medium text-white min-w-[40px] text-center">{year}</span>
+              <button
+                onClick={() => setYear((y) => String(Number(y) + 1))}
+                disabled={Number(year) >= currentYear}
+                className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -40,58 +105,41 @@ export default function HomePage() {
               <div key={i} className="h-24 bg-zinc-900 rounded-[16px] animate-pulse" />
             ))}
           </div>
-        ) : summary ? (
+        ) : activeSummary ? (
           <div className="space-y-4">
             <SummaryCards
-              totalIncome={summary.totalIncome}
-              totalExpenses={summary.totalExpenses}
-              netSaved={summary.netSaved}
-              totalInvested={summary.totalInvested}
+              totalIncome={activeSummary.totalIncome}
+              totalExpenses={activeSummary.totalExpenses}
+              netSaved={activeSummary.netSaved}
+              totalInvested={activeSummary.totalInvested}
+              onIncomeClick={() => setSheetOpen(true)}
             />
-            {(() => {
-              const budgetCategories = (summary.categories as any[]).filter(
-                (c: any) => c.budget_enabled && c.budget_limit
-              );
-              const overBudget = budgetCategories.filter((c: any) => {
-                const spent = (summary.expensesByCategory as any[]).find(
-                  (e: any) => e.category_id === c.id
-                );
-                return spent && Number(spent.total) / Number(c.budget_limit) >= 0.8;
-              });
-              if (!overBudget.length) return null;
-              return (
-                <div className="bg-[#141414] rounded-[16px] p-4 border border-zinc-800">
-                  <p className="text-xs text-zinc-500 font-medium mb-2">Budget Alerts</p>
-                  <div className="space-y-1.5">
-                    {overBudget.map((c: any) => {
-                      const spent = (summary.expensesByCategory as any[]).find(
-                        (e: any) => e.category_id === c.id
-                      );
-                      return (
-                        <div key={c.id} className="flex items-center gap-2 text-xs">
-                          <BudgetIndicator spent={Number(spent?.total ?? 0)} limit={Number(c.budget_limit)} />
-                          <span className="text-zinc-300">{c.name}</span>
-                          <span className="text-zinc-500 ml-auto">
-                            ₹{Number(spent?.total ?? 0).toLocaleString("en-IN")} / ₹{Number(c.budget_limit).toLocaleString("en-IN")}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
-            <SpendingDonut data={(summary.expensesByCategory as any[]).map((c: any) => ({
+            <SpendingDonut data={(activeSummary.expensesByCategory as any[]).map((c: any) => ({
               name: c.name ?? "Unknown",
               color: c.color,
               total: Number(c.total),
             }))} />
-            <IncomeExpenseBar data={last6} />
+            <IncomeExpenseBar
+              data={mode === "monthly" ? last6 : allMonths}
+              title={mode === "monthly" ? "Income vs Expenses (6 months)" : `Income vs Expenses (${year})`}
+            />
           </div>
         ) : (
-          <p className="text-zinc-500 text-sm text-center py-12">No data for this month yet.</p>
+          <p className="text-zinc-500 text-sm text-center py-12">No data for this period yet.</p>
         )}
       </div>
+
+      <IncomeBreakdownSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        incomeByAccount={activeSummary?.incomeByAccount ?? []}
+        incomeBySource={(activeSummary?.incomeBySource as any[] ?? []).map((r: any) => ({
+          source: r.source,
+          total: Number(r.total),
+        }))}
+        totalIncome={activeSummary?.totalIncome ?? 0}
+      />
+
       <BottomNav />
     </div>
   );
