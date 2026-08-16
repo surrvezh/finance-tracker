@@ -2,20 +2,18 @@ import { signIn } from "@/lib/auth";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-6">
-      {/* Subtle radial glow */}
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-[#0a0a0a] px-6">
       <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-violet-600/[0.06] rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-violet-500/[0.06] rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-sm space-y-10 text-center relative">
-        {/* Logo mark */}
         <div className="flex flex-col items-center gap-4">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-500/30 to-violet-600/10 border border-violet-500/20 flex items-center justify-center">
-            <span className="text-3xl font-bold text-violet-400">₹</span>
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-100 to-violet-50 dark:from-violet-500/30 dark:to-violet-600/10 border border-violet-200 dark:border-violet-500/20 flex items-center justify-center">
+            <span className="text-3xl font-bold text-violet-600 dark:text-violet-400">₹</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Finance Tracker</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Finance Tracker</h1>
             <p className="text-zinc-500 text-sm mt-1.5">Track income, expenses &amp; investments</p>
           </div>
         </div>
@@ -28,7 +26,7 @@ export default function LoginPage() {
         >
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 bg-white text-black rounded-2xl px-6 py-4 text-sm font-semibold hover:bg-zinc-100 transition-colors shadow-lg shadow-black/30"
+            className="w-full flex items-center justify-center gap-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl px-6 py-4 text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors shadow-lg shadow-black/10"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -40,7 +38,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-xs text-zinc-600">Your personal finance data stays private.</p>
+        <p className="text-xs text-zinc-400 dark:text-zinc-600">Your personal finance data stays private.</p>
       </div>
     </div>
   );

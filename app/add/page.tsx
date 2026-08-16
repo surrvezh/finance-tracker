@@ -12,30 +12,30 @@ const TYPE_OPTIONS = [
     label: "Income",
     desc: "Salary, brand deals, YouTube...",
     icon: ArrowUpRight,
-    color: "text-emerald-400",
-    gradient: "from-emerald-500/[0.1] to-transparent",
-    border: "border-emerald-500/[0.2]",
-    iconBg: "bg-emerald-500/[0.15]",
+    color: "text-emerald-600 dark:text-emerald-400",
+    gradient: "from-emerald-50 to-white dark:from-emerald-500/[0.1] dark:to-transparent",
+    border: "border-emerald-200 dark:border-emerald-500/[0.2]",
+    iconBg: "bg-emerald-100 dark:bg-emerald-500/[0.15]",
   },
   {
     type: "expense" as TransactionType,
     label: "Expense",
     desc: "Food, shopping, bills...",
     icon: ArrowDownRight,
-    color: "text-red-400",
-    gradient: "from-red-500/[0.1] to-transparent",
-    border: "border-red-500/[0.2]",
-    iconBg: "bg-red-500/[0.15]",
+    color: "text-red-600 dark:text-red-400",
+    gradient: "from-red-50 to-white dark:from-red-500/[0.1] dark:to-transparent",
+    border: "border-red-200 dark:border-red-500/[0.2]",
+    iconBg: "bg-red-100 dark:bg-red-500/[0.15]",
   },
   {
     type: "investment" as TransactionType,
     label: "Investment",
     desc: "Mutual funds, stocks, crypto...",
     icon: TrendingUp,
-    color: "text-blue-400",
-    gradient: "from-blue-500/[0.1] to-transparent",
-    border: "border-blue-500/[0.2]",
-    iconBg: "bg-blue-500/[0.15]",
+    color: "text-blue-600 dark:text-blue-400",
+    gradient: "from-blue-50 to-white dark:from-blue-500/[0.1] dark:to-transparent",
+    border: "border-blue-200 dark:border-blue-500/[0.2]",
+    iconBg: "bg-blue-100 dark:bg-blue-500/[0.15]",
   },
 ];
 
@@ -96,10 +96,15 @@ export default function AddPage() {
 
   const activeType = TYPE_OPTIONS.find((t) => t.type === txType);
 
+  const fieldClass = "bg-white dark:bg-[#111111] rounded-2xl p-4 border border-zinc-200 dark:border-white/[0.07]";
+  const labelClass = "text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2";
+  const inputClass = "w-full bg-transparent text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 outline-none text-sm";
+  const selectClass = "w-full bg-transparent text-zinc-900 dark:text-white outline-none text-sm";
+
   if (step === "type") {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] pb-24 px-5 pt-14">
-        <h1 className="text-2xl font-bold text-white tracking-tight mb-1">Add Transaction</h1>
+      <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0a] pb-24 px-5 pt-14">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight mb-1">Add Transaction</h1>
         <p className="text-sm text-zinc-500 mb-8">What would you like to record?</p>
         <div className="space-y-3">
           {TYPE_OPTIONS.map(({ type, label, desc, icon: Icon, color, gradient, border, iconBg }) => (
@@ -113,10 +118,10 @@ export default function AddPage() {
                 <Icon size={22} className={color} />
               </div>
               <div className="flex-1">
-                <span className="text-white font-semibold text-base block">{label}</span>
+                <span className="text-zinc-900 dark:text-white font-semibold text-base block">{label}</span>
                 <span className="text-xs text-zinc-500">{desc}</span>
               </div>
-              <ChevronRight size={18} className="text-zinc-600" />
+              <ChevronRight size={18} className="text-zinc-400" />
             </button>
           ))}
         </div>
@@ -126,23 +131,23 @@ export default function AddPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pb-24 px-5 pt-14">
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0a] pb-24 px-5 pt-14">
       <div className="flex items-center gap-3 mb-8">
-        <button type="button" onClick={() => setStep("type")} className="p-2 rounded-full hover:bg-white/[0.07] transition-colors">
-          <ArrowLeft size={20} />
+        <button type="button" onClick={() => setStep("type")} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/[0.07] transition-colors">
+          <ArrowLeft size={20} className="text-zinc-900 dark:text-white" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Add {txType}</h1>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Add {txType}</h1>
           {activeType && <p className="text-xs text-zinc-500">{activeType.desc}</p>}
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Amount — hero input */}
-        <div className="bg-[#111111] rounded-2xl px-5 pt-4 pb-5 border border-white/[0.07]">
-          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-3">Amount</label>
+        {/* Amount hero */}
+        <div className="bg-white dark:bg-[#111111] rounded-2xl px-5 pt-4 pb-5 border border-zinc-200 dark:border-white/[0.07]">
+          <label className={labelClass}>Amount</label>
           <div className="flex items-center gap-2">
-            <span className="text-3xl font-bold text-zinc-500">₹</span>
+            <span className="text-3xl font-bold text-zinc-400">₹</span>
             <input
               type="number"
               value={amount}
@@ -150,80 +155,69 @@ export default function AddPage() {
               placeholder="0"
               required
               inputMode="decimal"
-              className="w-full bg-transparent text-4xl font-bold text-white placeholder:text-zinc-700 outline-none tracking-tight"
+              className="w-full bg-transparent text-4xl font-bold text-zinc-900 dark:text-white placeholder:text-zinc-200 dark:placeholder:text-zinc-700 outline-none tracking-tight"
             />
           </div>
         </div>
 
-        {/* Date */}
-        <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Date</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="w-full bg-transparent text-white outline-none text-sm [color-scheme:dark]"
-          />
+        <div className={fieldClass}>
+          <label className={labelClass}>Date</label>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className={`${inputClass} [color-scheme:light] dark:[color-scheme:dark]`} />
         </div>
 
-        {/* Income-specific */}
         {txType === "income" && (
           <>
-            <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-              <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Source</label>
-              <select value={source} onChange={(e) => setSource(e.target.value)} className="w-full bg-transparent text-white outline-none text-sm">
-                <option value="salary" className="bg-zinc-900">Salary</option>
-                <option value="brand_deal" className="bg-zinc-900">Brand Deal</option>
-                <option value="youtube" className="bg-zinc-900">YouTube</option>
-                <option value="other" className="bg-zinc-900">Other</option>
+            <div className={fieldClass}>
+              <label className={labelClass}>Source</label>
+              <select value={source} onChange={(e) => setSource(e.target.value)} className={selectClass}>
+                <option value="salary" className="bg-white dark:bg-zinc-900">Salary</option>
+                <option value="brand_deal" className="bg-white dark:bg-zinc-900">Brand Deal</option>
+                <option value="youtube" className="bg-white dark:bg-zinc-900">YouTube</option>
+                <option value="other" className="bg-white dark:bg-zinc-900">Other</option>
               </select>
             </div>
             {source === "brand_deal" && (
-              <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-                <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Brand Name</label>
-                <input type="text" value={brandName} onChange={(e) => setBrandName(e.target.value)} placeholder="e.g. boAt, Mamaearth..." className="w-full bg-transparent text-white placeholder:text-zinc-600 outline-none text-sm" />
+              <div className={fieldClass}>
+                <label className={labelClass}>Brand Name</label>
+                <input type="text" value={brandName} onChange={(e) => setBrandName(e.target.value)} placeholder="e.g. boAt, Mamaearth..." className={inputClass} />
               </div>
             )}
-            <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-              <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Account</label>
-              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full bg-transparent text-white outline-none text-sm">
-                {accounts.map((a) => <option key={a.id} value={a.id} className="bg-zinc-900">{a.name}</option>)}
+            <div className={fieldClass}>
+              <label className={labelClass}>Account</label>
+              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className={selectClass}>
+                {accounts.map((a) => <option key={a.id} value={a.id} className="bg-white dark:bg-zinc-900">{a.name}</option>)}
               </select>
             </div>
           </>
         )}
 
-        {/* Expense-specific */}
         {txType === "expense" && (
           <>
-            <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-              <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Category</label>
-              <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full bg-transparent text-white outline-none text-sm">
-                {categories.map((c) => <option key={c.id} value={c.id} className="bg-zinc-900">{c.name}</option>)}
+            <div className={fieldClass}>
+              <label className={labelClass}>Category</label>
+              <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={selectClass}>
+                {categories.map((c) => <option key={c.id} value={c.id} className="bg-white dark:bg-zinc-900">{c.name}</option>)}
               </select>
             </div>
-            <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-              <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Account</label>
-              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full bg-transparent text-white outline-none text-sm">
-                {accounts.map((a) => <option key={a.id} value={a.id} className="bg-zinc-900">{a.name}</option>)}
+            <div className={fieldClass}>
+              <label className={labelClass}>Account</label>
+              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className={selectClass}>
+                {accounts.map((a) => <option key={a.id} value={a.id} className="bg-white dark:bg-zinc-900">{a.name}</option>)}
               </select>
             </div>
           </>
         )}
 
-        {/* Investment-specific */}
         {txType === "investment" && (
-          <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-            <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Fund / Asset</label>
-            <input type="text" value={fundName} onChange={(e) => setFundName(e.target.value)} placeholder="e.g. Nifty 50 Index Fund" required className="w-full bg-transparent text-white placeholder:text-zinc-600 outline-none text-sm" />
+          <div className={fieldClass}>
+            <label className={labelClass}>Fund / Asset</label>
+            <input type="text" value={fundName} onChange={(e) => setFundName(e.target.value)} placeholder="e.g. Nifty 50 Index Fund" required className={inputClass} />
           </div>
         )}
 
-        {/* Note */}
-        <div className="bg-[#111111] rounded-2xl p-4 border border-white/[0.07]">
-          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider block mb-2">Note (optional)</label>
-          <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note..." className="w-full bg-transparent text-white placeholder:text-zinc-600 outline-none text-sm" />
+        <div className={fieldClass}>
+          <label className={labelClass}>Note (optional)</label>
+          <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note..." className={inputClass} />
         </div>
 
         <button

@@ -58,14 +58,13 @@ export default function HistoryPage() {
   const filtered = filter === "all" ? transactions : transactions.filter((t) => t.type === filter);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pb-24">
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0a] pb-24">
       <div className="px-5 pt-14 pb-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-white tracking-tight">History</h1>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">History</h1>
           <MonthPicker month={month} onChange={setMonth} />
         </div>
 
-        {/* Filter chips */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 no-scrollbar">
           {FILTERS.map(({ value, label }) => (
             <button
@@ -75,7 +74,7 @@ export default function HistoryPage() {
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
                 filter === value
                   ? "bg-violet-600 text-white"
-                  : "bg-white/[0.06] text-zinc-400 hover:text-white"
+                  : "bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               {label}
@@ -85,17 +84,17 @@ export default function HistoryPage() {
 
         {loading ? (
           <div className="space-y-3">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-white/[0.04] rounded-2xl animate-pulse" />)}
+            {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-16 bg-zinc-200 dark:bg-white/[0.04] rounded-2xl animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-16 h-16 rounded-3xl bg-white/[0.04] flex items-center justify-center">
+            <div className="w-16 h-16 rounded-3xl bg-zinc-100 dark:bg-white/[0.04] flex items-center justify-center">
               <span className="text-2xl">🧾</span>
             </div>
             <p className="text-zinc-500 text-sm">No transactions found.</p>
           </div>
         ) : (
-          <div className="bg-[#111111] rounded-2xl px-4 border border-white/[0.07]">
+          <div className="bg-white dark:bg-[#111111] rounded-2xl px-4 border border-zinc-200 dark:border-white/[0.07]">
             {filtered.map((t) => (
               <TransactionRow key={`${t.type}-${t.id}`} {...t} onDelete={handleDelete} />
             ))}

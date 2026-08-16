@@ -56,24 +56,28 @@ export default function HomePage() {
     ? ((activeSummary.netSaved / activeSummary.totalIncome) * 100).toFixed(1)
     : null;
 
+  const heroPositive = !activeSummary || activeSummary.netSaved >= 0;
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pb-28">
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0a] pb-28">
       <div className="px-5 pt-14 pb-6">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-xs text-zinc-500 font-medium">{getGreeting()}</p>
-            <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">Overview</h1>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight mt-0.5">Overview</h1>
           </div>
-          <div className="flex bg-white/[0.06] rounded-xl p-0.5">
+          <div className="flex bg-zinc-100 dark:bg-white/[0.06] rounded-xl p-0.5">
             {(["monthly", "yearly"] as ViewMode[]).map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => { setMode(m); setLoading(true); }}
                 className={`px-4 py-1.5 rounded-[10px] text-xs font-medium transition-all capitalize ${
-                  mode === m ? "bg-white/[0.1] text-white" : "text-zinc-500"
+                  mode === m
+                    ? "bg-white dark:bg-white/[0.1] text-zinc-900 dark:text-white shadow-sm"
+                    : "text-zinc-500"
                 }`}
               >
                 {m}
@@ -91,16 +95,16 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setYear((y) => String(Number(y) - 1))}
-                className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+                className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
               >
                 <ChevronLeft size={18} />
               </button>
-              <span className="text-sm font-medium text-white min-w-[40px] text-center">{year}</span>
+              <span className="text-sm font-semibold text-zinc-900 dark:text-white min-w-[40px] text-center">{year}</span>
               <button
                 type="button"
                 onClick={() => setYear((y) => String(Number(y) + 1))}
                 disabled={Number(year) >= currentYear}
-                className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors disabled:opacity-30"
+                className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors disabled:opacity-30"
               >
                 <ChevronRight size={18} />
               </button>
@@ -110,24 +114,27 @@ export default function HomePage() {
 
         {loading ? (
           <div className="space-y-3">
-            <div className="h-28 bg-white/[0.04] rounded-2xl animate-pulse" />
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-20 bg-white/[0.04] rounded-2xl animate-pulse" />
+            <div className="h-28 bg-zinc-200 dark:bg-white/[0.04] rounded-2xl animate-pulse" />
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-20 bg-zinc-200 dark:bg-white/[0.04] rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : activeSummary ? (
           <div className="space-y-4">
-
             {/* Hero net-saved card */}
             <div className={`rounded-2xl p-5 border ${
-              activeSummary.netSaved >= 0
-                ? "bg-gradient-to-br from-emerald-500/[0.12] to-emerald-500/[0.03] border-emerald-500/[0.2]"
-                : "bg-gradient-to-br from-red-500/[0.12] to-red-500/[0.03] border-red-500/[0.2]"
+              heroPositive
+                ? "bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/[0.12] dark:to-emerald-500/[0.03] border-emerald-200 dark:border-emerald-500/[0.2]"
+                : "bg-gradient-to-br from-red-50 to-white dark:from-red-500/[0.12] dark:to-red-500/[0.03] border-red-200 dark:border-red-500/[0.2]"
             }`}>
-              <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider mb-1.5">
+              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1.5">
                 {mode === "monthly" ? "Net Saved" : `Net Saved · ${year}`}
               </p>
-              <p className={`text-3xl font-bold tracking-tight ${activeSummary.netSaved < 0 ? "text-red-400" : "text-white"}`}>
+              <p className={`text-3xl font-bold tracking-tight ${
+                activeSummary.netSaved < 0
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-zinc-900 dark:text-white"
+              }`}>
                 {activeSummary.netSaved < 0 ? "−" : ""}{formatCurrency(Math.abs(activeSummary.netSaved))}
               </p>
               {saveRate !== null && (
@@ -154,7 +161,7 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-16 h-16 rounded-3xl bg-white/[0.04] flex items-center justify-center">
+            <div className="w-16 h-16 rounded-3xl bg-zinc-100 dark:bg-white/[0.04] flex items-center justify-center">
               <span className="text-2xl">📊</span>
             </div>
             <p className="text-zinc-500 text-sm">No data for this period yet.</p>
