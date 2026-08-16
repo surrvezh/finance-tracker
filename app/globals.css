@@ -6,12 +6,17 @@
   :root {
     --background: 0 0% 4%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 8%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
+    --border: 0 0% 9%;
+    --input: 0 0% 9%;
     --ring: 263 70% 50%;
-    --radius: 0.75rem;
+    --radius: 1rem;
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -22,4 +27,20 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .safe-area-pb {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+  }
 }
